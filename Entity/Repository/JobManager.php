@@ -29,7 +29,7 @@ use JMS\JobQueueBundle\Entity\Job;
 use JMS\JobQueueBundle\Event\StateChangeEvent;
 use JMS\JobQueueBundle\Retry\ExponentialRetryScheduler;
 use JMS\JobQueueBundle\Retry\RetryScheduler;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
 class JobManager
@@ -38,9 +38,9 @@ class JobManager
     private $registry;
     private $retryScheduler;
     
-    public function __construct(ManagerRegistry $managerRegistry, EventDispatcherInterface $eventDispatcher, RetryScheduler $retryScheduler)
+    public function __construct(Registry $registry, EventDispatcherInterface $eventDispatcher, RetryScheduler $retryScheduler)
     {
-        $this->registry = $managerRegistry;
+        $this->registry = $registry;
         $this->dispatcher = $eventDispatcher;
         $this->retryScheduler = $retryScheduler;
     }
@@ -132,7 +132,7 @@ class JobManager
 
     public function findAllForRelatedEntity($relatedEntity)
     {
-        list($relClass, $relId) = $this->getRelatedEntityIdentifier($relatedEntity);
+        [$relClass, $relId] = $this->getRelatedEntityIdentifier($relatedEntity);
 
         $rsm = new ResultSetMappingBuilder($this->getJobManager());
         $rsm->addRootEntityFromClassMetadata('JMSJobQueueBundle:Job', 'j');
@@ -150,7 +150,7 @@ class JobManager
 
     public function findJobForRelatedEntity($command, $relatedEntity, array $states = array())
     {
-        list($relClass, $relId) = $this->getRelatedEntityIdentifier($relatedEntity);
+        [$relClass, $relId] = $this->getRelatedEntityIdentifier($relatedEntity);
 
         $rsm = new ResultSetMappingBuilder($this->getJobManager());
         $rsm->addRootEntityFromClassMetadata('JMSJobQueueBundle:Job', 'j');

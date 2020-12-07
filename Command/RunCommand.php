@@ -18,13 +18,13 @@
 
 namespace JMS\JobQueueBundle\Command;
 
-use Doctrine\ORM\EntityManager;
+use Doctrine\ORM\EntityManagerInterface;
 use JMS\JobQueueBundle\Entity\Job;
 use JMS\JobQueueBundle\Entity\Repository\JobManager;
 use JMS\JobQueueBundle\Event\NewOutputEvent;
 use JMS\JobQueueBundle\Event\StateChangeEvent;
 use JMS\JobQueueBundle\Exception\InvalidArgumentException;
-use Symfony\Bridge\Doctrine\ManagerRegistry;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -46,7 +46,7 @@ class RunCommand extends Command
     /** @var OutputInterface */
     private $output;
 
-    /** @var ManagerRegistry */
+    /** @var Registry */
     private $registry;
 
     /** @var JobManager */
@@ -67,11 +67,11 @@ class RunCommand extends Command
     /** @var array */
     private $queueOptions;
 
-    public function __construct(ManagerRegistry $managerRegistry, JobManager $jobManager, EventDispatcherInterface $dispatcher, array $queueOptionsDefault, array $queueOptions)
+    public function __construct(Registry $registry, JobManager $jobManager, EventDispatcherInterface $dispatcher, array $queueOptionsDefault, array $queueOptions)
     {
         parent::__construct();
 
-        $this->registry = $managerRegistry;
+        $this->registry = $registry;
         $this->jobManager = $jobManager;
         $this->dispatcher = $dispatcher;
         $this->queueOptionsDefault = $queueOptionsDefault;
@@ -445,8 +445,8 @@ class RunCommand extends Command
         return $args;
     }
 
-    private function getEntityManager(): EntityManager
+    private function getEntityManager(): EntityManagerInterface
     {
-        return /** @var EntityManager */ $this->registry->getManagerForClass('JMSJobQueueBundle:Job');
+        return /** @var EntityManagerInterface */ $this->registry->getManagerForClass('JMSJobQueueBundle:Job');
     }
 }

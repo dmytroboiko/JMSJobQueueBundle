@@ -2,9 +2,9 @@
 
 namespace JMS\JobQueueBundle\Command;
 
-use Doctrine\Common\Persistence\ManagerRegistry;
 use Doctrine\ORM\EntityManager;
 use JMS\JobQueueBundle\Entity\Job;
+use Doctrine\Bundle\DoctrineBundle\Registry;
 use Symfony\Component\Console\Command\Command;
 use JMS\JobQueueBundle\Entity\Repository\JobManager;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -18,11 +18,11 @@ class MarkJobIncompleteCommand extends Command
     private $registry;
     private $jobManager;
 
-    public function __construct(ManagerRegistry $managerRegistry, JobManager $jobManager)
+    public function __construct(Registry $registry, JobManager $jobManager)
     {
         parent::__construct();
 
-        $this->registry = $managerRegistry;
+        $this->registry = $registry;
         $this->jobManager = $jobManager;
     }
 
