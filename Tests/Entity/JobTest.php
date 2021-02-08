@@ -19,11 +19,15 @@
 namespace JMS\JobQueueBundle\Tests\Entity;
 
 use JMS\JobQueueBundle\Entity\Job;
+use JMS\JobQueueBundle\Exception\InvalidStateTransitionException;
 use PHPUnit\Framework\TestCase;
 
 class JobTest extends TestCase
 {
-    public function testConstruct()
+    /**
+     * @return Job
+     */
+    public function testConstruct(): Job
     {
         $job = new Job('a:b', array('a', 'b', 'c'));
 
@@ -38,17 +42,23 @@ class JobTest extends TestCase
 
     /**
      * @depends testConstruct
-     * @expectedException JMS\JobQueueBundle\Exception\InvalidStateTransitionException
+     * @param Job $job
      */
     public function testInvalidTransition(Job $job)
     {
+        $this->expectException(InvalidStateTransitionException::class);
+        $this->expectExceptionMessage(
+            'The Job(id = 0) cannot change from "pending" to "failed". Allowed transitions: "running", "canceled"'
+        );
         $job->setState('failed');
     }
 
     /**
      * @depends testConstruct
+     * @param Job $job
+     * @return Job
      */
-    public function testStateToRunning(Job $job)
+    public function testStateToRunning(Job $job): Job
     {
         $job->setState('running');
         $this->assertEquals('running', $job->getState());
@@ -61,6 +71,7 @@ class JobTest extends TestCase
 
     /**
      * @depends testStateToRunning
+     * @param Job $job
      */
     public function testStateToFailed(Job $job)
     {
@@ -72,6 +83,7 @@ class JobTest extends TestCase
 
     /**
      * @depends testStateToRunning
+     * @param Job $job
      */
     public function testStateToTerminated(Job $job)
     {
@@ -145,12 +157,10 @@ class JobTest extends TestCase
         $this->assertSame($b, $a->getDependencies()->first());
     }
 
-    /**
-     * @expectedException \LogicException
-     * @expectedExceptionMessage You cannot add dependencies to a job which might have been started already.
-     */
     public function testAddDependencyToRunningJob()
     {
+        $this->expectExceptionMessage("You cannot add dependencies to a job which might have been started already.");
+        $this->expectException(\LogicException::class);
         $job = new Job('a');
         $job->setState(Job::STATE_RUNNING);
         $this->setField($job, 'id', 1);
